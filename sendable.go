@@ -11,6 +11,8 @@ import (
 // messages to: either user, group or a channel.
 type Recipient interface {
 	Recipient() string // must return legit Telegram chat_id or username
+
+	Thread() *ForumTopic
 }
 
 // Sendable is any object that can send itself.
@@ -18,7 +20,6 @@ type Recipient interface {
 // This is pretty cool, since it lets bots implement
 // custom Sendables for complex kind of media or
 // chat objects spanning across multiple messages.
-//
 type Sendable interface {
 	Send(*Bot, Recipient, *SendOptions) (*Message, error)
 }
@@ -30,6 +31,9 @@ func (p *Photo) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"caption": p.Caption,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	msg, err := b.sendMedia(p, params, nil)
 	if err != nil {
@@ -52,7 +56,13 @@ func (a *Audio) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"title":     a.Title,
 		"file_name": a.FileName,
 	}
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	if a.Duration != 0 {
 		params["duration"] = strconv.Itoa(a.Duration)
@@ -85,6 +95,9 @@ func (d *Document) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error
 		"file_name": d.FileName,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	if d.FileSize != 0 {
 		params["file_size"] = strconv.FormatInt(d.FileSize, 10)
@@ -118,6 +131,9 @@ func (s *Sticker) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error)
 		"chat_id": to.Recipient(),
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	msg, err := b.sendMedia(s, params, nil)
 	if err != nil {
@@ -138,6 +154,9 @@ func (v *Video) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"file_name": v.FileName,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	if v.Duration != 0 {
 		params["duration"] = strconv.Itoa(v.Duration)
@@ -181,6 +200,9 @@ func (a *Animation) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, erro
 		"file_name": a.FileName,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	if a.Duration != 0 {
 		params["duration"] = strconv.Itoa(a.Duration)
@@ -225,6 +247,9 @@ func (v *Voice) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"caption": v.Caption,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	if v.Duration != 0 {
 		params["duration"] = strconv.Itoa(v.Duration)
@@ -247,6 +272,9 @@ func (v *VideoNote) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, erro
 		"chat_id": to.Recipient(),
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	if v.Duration != 0 {
 		params["duration"] = strconv.Itoa(v.Duration)
@@ -284,6 +312,9 @@ func (x *Location) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error
 		params["proximity_alert_radius"] = strconv.Itoa(x.Heading)
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	data, err := b.Raw("sendLocation", params)
 	if err != nil {
@@ -307,6 +338,9 @@ func (v *Venue) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"google_place_type": v.GooglePlaceType,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	data, err := b.Raw("sendVenue", params)
 	if err != nil {
@@ -351,6 +385,9 @@ func (p *Poll) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		params["close_date"] = strconv.FormatInt(p.CloseUnixdate, 10)
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	var options []string
 	for _, o := range p.Options {
@@ -375,6 +412,9 @@ func (d *Dice) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"emoji":   string(d.Type),
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	data, err := b.Raw("sendDice", params)
 	if err != nil {
@@ -391,6 +431,9 @@ func (g *Game) Send(b *Bot, to Recipient, opt *SendOptions) (*Message, error) {
 		"game_short_name": g.Name,
 	}
 	b.embedSendOptions(params, opt)
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
 
 	data, err := b.Raw("sendGame", params)
 	if err != nil {

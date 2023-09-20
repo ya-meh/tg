@@ -29,6 +29,10 @@ func (u *User) Recipient() string {
 	return strconv.FormatInt(u.ID, 10)
 }
 
+func (u *User) Thread() *ForumTopic {
+	return nil
+}
+
 // Chat object represents a Telegram user, bot, group or a channel.
 type Chat struct {
 	ID int64 `json:"id"`
@@ -58,11 +62,16 @@ type Chat struct {
 	Private          bool          `json:"has_private_forwards,omitempty"`
 	Protected        bool          `json:"has_protected_content,omitempty"`
 	NoVoiceAndVideo  bool          `json:"has_restricted_voice_and_video_messages"`
+	Topic            *ForumTopic   `json:"topic,omitempty"`
 }
 
 // Recipient returns chat ID (see Recipient interface).
 func (c *Chat) Recipient() string {
 	return strconv.FormatInt(c.ID, 10)
+}
+
+func (c *Chat) Thread() *ForumTopic {
+	return c.Topic
 }
 
 // ChatType represents one of the possible chat types.
@@ -162,19 +171,22 @@ func (c *ChatMemberUpdate) Time() time.Time {
 //
 // Example:
 //
-//		group := tele.ChatID(-100756389456)
-//		b.Send(group, "Hello!")
+//	group := tele.ChatID(-100756389456)
+//	b.Send(group, "Hello!")
 //
-//		type Config struct {
-//			AdminGroup tele.ChatID `json:"admin_group"`
-//		}
-//		b.Send(conf.AdminGroup, "Hello!")
-//
+//	type Config struct {
+//		AdminGroup tele.ChatID `json:"admin_group"`
+//	}
+//	b.Send(conf.AdminGroup, "Hello!")
 type ChatID int64
 
 // Recipient returns chat ID (see Recipient interface).
 func (i ChatID) Recipient() string {
 	return strconv.FormatInt(int64(i), 10)
+}
+
+func (i ChatID) Thread() *ForumTopic {
+	return nil
 }
 
 // ChatJoinRequest represents a join request sent to a chat.

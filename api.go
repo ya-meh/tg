@@ -165,6 +165,10 @@ func (b *Bot) sendText(to Recipient, text string, opt *SendOptions) (*Message, e
 		"chat_id": to.Recipient(),
 		"text":    text,
 	}
+	if thread := to.Thread(); thread != nil {
+		params["message_thread_id"] = strconv.FormatInt(thread.ID, 10)
+	}
+
 	b.embedSendOptions(params, opt)
 
 	data, err := b.Raw("sendMessage", params)
